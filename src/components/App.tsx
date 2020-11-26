@@ -13,6 +13,7 @@ import "./App.css";
 import { fetchLocation } from "../actions";
 
 import { AppState } from "../reducers/types";
+import { useGeolocation } from "../hooks/useGeolocation";
 
 function App() {
   const {
@@ -29,10 +30,17 @@ function App() {
   const [searchString, setSearchString] = useState("");
   const [added, setAdded] = useState(false);
 
+  const {lat,lng} = useGeolocation();
+
   useEffect(() => {
     const city = localStorage.getItem("city");
-    dispatch(fetchLocation(city ? city : "London"));
-  }, [dispatch]);
+    if(city) {
+      dispatch(fetchLocation(city));
+    } else {
+      // Request to google to fetch city by coords -  lat and lng
+      dispatch(fetchLocation("London"));
+    }
+  }, [dispatch, lat, lng]);
 
   function handleInputChange(value: string) {
     setSearchString(value);

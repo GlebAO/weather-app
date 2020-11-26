@@ -141,8 +141,7 @@ export const fetchWeather = (
         dispatch(weatherLoaded(weather))
     })
         .catch(err => {
-            dispatch(weatherError(new Error(err.response.data.message)))
-            
+            dispatch(weatherError(new Error(err.response.data.message)))  
             //alert(err.message);
            // console.log(err);
         });
