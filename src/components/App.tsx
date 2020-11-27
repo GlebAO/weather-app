@@ -8,7 +8,6 @@ import {
 } from "@shopify/polaris";
 import { useDispatch, useSelector } from "react-redux";
 
-import "./App.css";
 import { fetchLocation } from "../actions";
 
 import { AppState } from "../reducers/types";
@@ -17,19 +16,15 @@ import CityAutocomplete from "./CityAutocomplete";
 import Weather from "./Weather";
 
 function App() {
-  const {
-    weatherLoading,
-    locationLoading,
-  } = useSelector<AppState, AppState>((state) => state);
+  const {weatherLoading,locationLoading} = useSelector<AppState, AppState>((state) => state);
 
   const dispatch = useDispatch();
 
   const [searchString, setSearchString] = useState("");
 
-  //const {lat,lng} = useGeolocation();
-
   useEffect(() => {
     const city = localStorage.getItem("city");
+
     if(city) {
       dispatch(fetchLocation(city));
     } else {
@@ -56,7 +51,6 @@ function App() {
           <form onSubmit={handleFormSubmit}>
             <FormLayout>
               <FormLayout.Group>
-                <CityAutocomplete />
                 <TextField
                   value={searchString}
                   label="Найдите город"
