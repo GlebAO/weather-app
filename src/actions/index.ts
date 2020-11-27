@@ -49,19 +49,33 @@ export const fetchLocation = (
     searchString: string
 ): ThunkAction<void, AppState, unknown, Action<string>> => async dispatch => {
     dispatch(locationRequested());
-    setTimeout(() => {
+    /*setTimeout(() => {
         if (Math.random() > 0.75) {
             dispatch(locationError(new Error(`Could't fetch city`)))
-        }else {
-            
+        }else {   
             const loc = {city: searchString};
 
             //success request to google
             dispatch(locationLoaded(loc));
+
             dispatch(fetchWeather(loc.city))
+        }       
+    }, 700);*/
+//
+    await axios.get<any>(`https://geocode-maps.yandex.ru/1.x/?apikey=${process.env.REACT_APP_YANDEX_API_KEY}&geocode=${searchString}&format=json&lang=en_US`).then(response => {
+        if (response.data.status !== "OK") {
+            dispatch(locationError(new Error("Could not fetch location!")))
         }
-         
-    }, 700);
+        let cityName = response.data.response.GeoObjectCollection.featureMember[0].GeoObject.name;
+
+        dispatch(locationLoaded({city: cityName }))
+        dispatch(fetchWeather(cityName))
+    })
+        .catch(err => {
+            dispatch(locationError(err))
+            //alert(err.message);
+            //console.log(err);
+        });
 
     /* await axios.get<GoogleGeocodingResponse>(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(searchString)}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`).then(response => {
         if (response.data.status !== "OK") {

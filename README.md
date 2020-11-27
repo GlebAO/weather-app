@@ -6,8 +6,8 @@
 
 - Create **.env.local** file in project root direcory with 
 ```
-REACT_APP_GOOGLE_API_KEY=key
-REACT_APP_WEATHER_API_KEY=key
+REACT_APP_WEATHER_API_KEY=https://openweathermap.org/
+REACT_APP_YANDEX_API_KEY=https://yandex.ru/dev/maps/geocoder/doc/desc/concepts/about.html
 ```
 - Run commands below
 ```shell

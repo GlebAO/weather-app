@@ -2,10 +2,9 @@ import React, { FormEvent, useEffect, useState } from "react";
 import {
   Layout,
   Page,
-  Card,
   Button,
   FormLayout,
-  TextField,
+  TextField
 } from "@shopify/polaris";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -13,34 +12,31 @@ import "./App.css";
 import { fetchLocation } from "../actions";
 
 import { AppState } from "../reducers/types";
-import { useGeolocation } from "../hooks/useGeolocation";
+//import { useGeolocation } from "../hooks/useGeolocation";
+import CityAutocomplete from "./CityAutocomplete";
+import Weather from "./Weather";
 
 function App() {
   const {
-    locationData,
-    weatherData,
     weatherLoading,
     locationLoading,
-    weatherError,
-    locationError,
   } = useSelector<AppState, AppState>((state) => state);
 
   const dispatch = useDispatch();
 
   const [searchString, setSearchString] = useState("");
-  const [added, setAdded] = useState(false);
 
-  const {lat,lng} = useGeolocation();
+  //const {lat,lng} = useGeolocation();
 
   useEffect(() => {
     const city = localStorage.getItem("city");
     if(city) {
       dispatch(fetchLocation(city));
     } else {
-      // Request to google to fetch city by coords -  lat and lng
+      // Need to do request to google to fetch city by coords -  lat and lng
       dispatch(fetchLocation("London"));
     }
-  }, [dispatch, lat, lng]);
+  }, [dispatch]);
 
   function handleInputChange(value: string) {
     setSearchString(value);
@@ -53,13 +49,6 @@ function App() {
     }
   }
 
-  function handleBookmarkClick() {
-    if (locationData) {
-      setAdded(true);
-      localStorage.setItem("city", locationData.city);
-    }
-  }
-
   return (
     <Page title="Weather app">
       <Layout>
@@ -67,6 +56,7 @@ function App() {
           <form onSubmit={handleFormSubmit}>
             <FormLayout>
               <FormLayout.Group>
+                <CityAutocomplete />
                 <TextField
                   value={searchString}
                   label="Найдите город"
@@ -85,27 +75,8 @@ function App() {
           </form>
         </Layout.Section>
 
-        <Layout.Section>
-          {locationError && !locationLoading && <p>{locationError.message}</p>}
-          {weatherError && !weatherLoading && <p>{weatherError.message}</p>}
-          {locationLoading && <p>Определение города...</p>}
-          {weatherLoading && <p>Загрузка погоды...</p>}
+        <Weather />
 
-          {weatherData && !weatherLoading && locationData && (
-            <Card
-              title={`Погода в ${locationData.city}`}
-              sectioned
-              primaryFooterAction={{
-                content: added ? "Добавлено" : "В избранное",
-                onAction: handleBookmarkClick,
-                disabled: added,
-              }}
-            >
-              <p>Температура: {weatherData?.main?.temp}</p>
-              <p>Давление : {weatherData?.main?.pressure}</p>
-            </Card>
-          )}
-        </Layout.Section>
       </Layout>
     </Page>
   );
