@@ -12,7 +12,7 @@ REACT_APP_YANDEX_API_KEY=https://yandex.ru/dev/maps/geocoder/doc/desc/concepts/a
 - Run commands below
 ```shell
 $ npm install
-$ npm start
+$ HTTPS=true npm start
 ```
 
 ## License
