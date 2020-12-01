@@ -2,6 +2,7 @@ import { Action } from 'redux';
 import { AppState } from "../reducers/types";
 import { ThunkAction } from 'redux-thunk';
 import axios from "axios";
+import { detectLocation } from '../utils/GeoUtils';
 
 export const FETCH_LOCATION_REQUEST = 'FETCH_LOCATION_REQUEST'
 export const FETCH_LOCATION_SUCCESS = 'FETCH_LOCATION_SUCCESS'
@@ -49,6 +50,7 @@ export const fetchLocation = (
     searchString: string
 ): ThunkAction<void, AppState, unknown, Action<string>> => async dispatch => {
     dispatch(locationRequested());
+
     /*setTimeout(() => {
         if (Math.random() > 0.75) {
             dispatch(locationError(new Error(`Could't fetch city`)))
@@ -61,14 +63,14 @@ export const fetchLocation = (
             dispatch(fetchWeather(loc.city))
         }       
     }, 700);*/
-//
-    await axios.get<any>(`https://geocode-maps.yandex.ru/1.x/?apikey=${process.env.REACT_APP_YANDEX_API_KEY}&geocode=${searchString}&format=json&lang=en_US`).then(response => {
+    //
+    await axios.get<any>(`https://geocode-maps.yandex.ru/1.x/?apikey=${process.env.REACT_APP_YANDEX_API_KEY}&geocode=${searchString}&format=json&lang=en_US&kind=locality`).then(response => {
         if (response.data.status !== "OK") {
             dispatch(locationError(new Error("Could not fetch location!")))
         }
         let cityName = response.data.response.GeoObjectCollection.featureMember[0].GeoObject.name;
 
-        dispatch(locationLoaded({city: cityName }))
+        dispatch(locationLoaded({ city: cityName }))
         dispatch(fetchWeather(cityName))
     })
         .catch(err => {
@@ -155,8 +157,58 @@ export const fetchWeather = (
         dispatch(weatherLoaded(weather))
     })
         .catch(err => {
-            dispatch(weatherError(new Error(err.response.data.message)))  
+            dispatch(weatherError(new Error(err.response.data.message)))
             //alert(err.message);
-           // console.log(err);
+            // console.log(err);
+        });
+}
+
+export const FETCH_COORDS_REQUEST = 'FETCH_COORDS_REQUEST'
+export const FETCH_COORDS_SUCCESS = 'FETCH_COORDS_SUCCESS'
+export const FETCH_COORDS_FAILURE = 'FETCH_COORDS_FAILURE'
+
+interface coordsRequestedAction {
+    type: typeof FETCH_COORDS_REQUEST;
+}
+interface coordsLoadedAction {
+    type: typeof FETCH_COORDS_SUCCESS,
+    payload: GeolocationPosition
+}
+interface coordsErrorAction {
+    type: typeof FETCH_COORDS_FAILURE
+    payload: Error
+}
+
+export type coordsActionTypes = coordsRequestedAction | coordsLoadedAction | coordsErrorAction;
+
+const coordsRequested = (): coordsActionTypes => {
+    return {
+        type: FETCH_COORDS_REQUEST
+    };
+};
+
+const coordsLoaded = (coords: GeolocationPosition): coordsActionTypes => {
+    return {
+        type: FETCH_COORDS_SUCCESS,
+        payload: coords
+    };
+};
+
+const coordsError = (error: Error): coordsActionTypes => {
+    return {
+        type: FETCH_COORDS_FAILURE,
+        payload: error
+    };
+};
+
+export const fetchGeo = (): ThunkAction<void, AppState, unknown, Action<string>> => async dispatch => {
+    dispatch(coordsRequested());
+    await detectLocation().then(coords => {
+        dispatch(coordsLoaded(coords))
+        const {coords:{latitude, longitude}} = coords;
+        dispatch(fetchLocation(`${longitude},${latitude}`))
+    })
+        .catch(err => {
+            dispatch(coordsError(err))
         });
 }
