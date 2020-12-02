@@ -2,7 +2,7 @@ import { Action } from 'redux';
 import { AppState } from "../reducers/types";
 import { ThunkAction } from 'redux-thunk';
 import axios from "axios";
-import { detectLocation } from '../utils/GeoUtils';
+import { getCurrentPosition } from '../utils/GeoUtils';
 
 export const FETCH_LOCATION_REQUEST = 'FETCH_LOCATION_REQUEST'
 export const FETCH_LOCATION_SUCCESS = 'FETCH_LOCATION_SUCCESS'
@@ -203,12 +203,11 @@ const coordsError = (error: Error): coordsActionTypes => {
 
 export const fetchGeo = (): ThunkAction<void, AppState, unknown, Action<string>> => async dispatch => {
     dispatch(coordsRequested());
-    await detectLocation().then(coords => {
+    getCurrentPosition({ timeout: 3600 }).then(coords => {
         dispatch(coordsLoaded(coords))
-        const {coords:{latitude, longitude}} = coords;
+        const { coords: { latitude, longitude } } = coords;
         dispatch(fetchLocation(`${longitude},${latitude}`))
-    })
-        .catch(err => {
-            dispatch(coordsError(err))
-        });
+    }).catch(err => {
+        dispatch(coordsError(err))
+    }); 
 }

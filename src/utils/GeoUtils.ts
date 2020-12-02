@@ -1,23 +1,18 @@
-export const detectLocation = function():Promise<GeolocationPosition> {
-    return new Promise((resolve, reject) => {
-        const defaultSettings = {
-            enableHighAccuracy: false,
-            timeout: Infinity,
-            maximumAge: 0,
-          };
-      
-          if (!navigator || !navigator.geolocation) {
-            console.log('error')
-          }
+export const getCurrentPosition = function ({enableHighAccuracy = false, timeout = 0, maximumAge = Infinity} = {}): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
 
-          navigator.geolocation.getCurrentPosition(
-            (coords: GeolocationPosition) => {
-                resolve(coords)
-            },
-            (error: GeolocationPositionError) => {
-                reject(error)
-            },
-            defaultSettings
-          );
-    })
-  }
+    if (!navigator || !navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by your browser'))
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (coords: GeolocationPosition) => {
+        resolve(coords)
+      },
+      (error: GeolocationPositionError) => {
+        reject(error)
+      },
+      {enableHighAccuracy, timeout, maximumAge}
+    );
+  })
+}
